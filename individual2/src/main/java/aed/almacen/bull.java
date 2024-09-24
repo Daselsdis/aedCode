@@ -10,7 +10,7 @@ import es.upm.aedlib.indexedlist.IndexedList;
 /**
  * Implementa la logica del almacen.
  */
-public class Almacen implements ClienteAPI, AlmacenAPI, ProductorAPI {
+public class bull implements ClienteAPI, AlmacenAPI, ProductorAPI {
 
     // Compras (sin ningun orden especial)
     private ArrayIndexedList<Compra> compras;
@@ -21,31 +21,29 @@ public class Almacen implements ClienteAPI, AlmacenAPI, ProductorAPI {
     /**
      * Crea un almacen.
      */
-    public Almacen() {
+    public bull() {
         this.compras = new ArrayIndexedList<>();
         this.productos = new ArrayIndexedList<>();
     }
 
     @Override
     public void reabastecerProducto(String productoId, int cantidad) {
-        boolean done = false;
-        for (int i = 0; i < productos.size() && !done; i++) {
-            if (productos.get(i).getProductoId().equals(productoId)) {
-                getProducto(productoId)
-                        .setCantidadDisponible(cantidad + getProducto(productoId).getCantidadDisponible());
-                done = true;
-            }
+        int index= buscarbinProd(productoId);
+        if(index!=-1&&productos.get(index).getProductoId().equals(productoId)){
+            int cant_disp=productos.get(index).getCantidadDisponible();
+            productos.get(index).setCantidadDisponible(cantidad+cant_disp);
         }
-        if (!done)
-            productos.add(productos.size(), new Producto(productoId, cantidad));
-
+        else{
+            Producto nuevo = new Producto(productoId, cantidad);
+            productos.add(productos.size(), nuevo);
+        }
     }
 
     public int buscarbinProd(String id) {
         int low = 0;
         int high = productos.size() - 1;
         boolean done = false;
-        int res = -1;
+        int res = 0;
 
         while (low <= high && !done) {
             int mid = (low + high) / 2;
@@ -111,6 +109,7 @@ public class Almacen implements ClienteAPI, AlmacenAPI, ProductorAPI {
     @Override
     public Producto getProducto(String productoId) {
         int id = buscarbinProd(productoId);
+        System.out.println(id);
         if (id == -1)
             return null;
         else
@@ -155,7 +154,7 @@ public class Almacen implements ClienteAPI, AlmacenAPI, ProductorAPI {
         IndexedList<Compra> res = new ArrayIndexedList<>();
 
         for (int i = 0; i < compras.size(); i++) {
-            if (compras.get(i).getClienteId().equals(clienteId)) {
+            if (compras.get(i).getClienteId().equals( clienteId)) {
                 res.add(res.size(), compras.get(i));
             }
         }
@@ -168,7 +167,7 @@ public class Almacen implements ClienteAPI, AlmacenAPI, ProductorAPI {
         IndexedList<Compra> res = new ArrayIndexedList<>();
 
         for (int i = 0; i < compras.size(); i++) {
-            if (compras.get(i).getProductoId().equals(productoId)) {
+            if (compras.get(i).getProductoId() == productoId) {
                 res.add(res.size(), compras.get(i));
             }
         }
@@ -192,14 +191,15 @@ public class Almacen implements ClienteAPI, AlmacenAPI, ProductorAPI {
     }
 
     public static void main(String[] args) {
-        Almacen a = new Almacen();
-
+        bull a = new bull();
         a.reabastecerProducto("t-shirt", 1);
         a.reabastecerProducto("t-shirt", 1);
-        a.reabastecerProducto("helado", 2);
-        a.pedir("julio", "helado", 4);
-        a.pedir("susana", "t-shirt", 4);
-        Producto b = a.getProducto("helado");
+        a.reabastecerProducto("movil", 2);
+        for(int i=0;i<a.productos.size();i++){
+            System.out.println("-"+a.getProductos().get(i));
+        }
+        System.out.println(a.getProducto("movil"));
+        System.out.println(a.getProducto("t-shirt"));
     }
 
 }
