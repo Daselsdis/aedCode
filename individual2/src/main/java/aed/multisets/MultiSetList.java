@@ -64,7 +64,7 @@ public class MultiSetList<E> implements MultiSet<E> {
     @Override
     public int remove(E elem, int n) {
         if (n < 0)
-            throw new IllegalArgumentException("Must provide positive quantity to add");
+            throw new IllegalArgumentException("Must provide positive quantity to remove");
 
         if (n > multiplicity(elem))
             return 0;
@@ -84,31 +84,11 @@ public class MultiSetList<E> implements MultiSet<E> {
             cursor = elements.next(cursor);
         }
         return acc;
-
-        /*
-         * int acc = 0;
-         * Position<Pair<E,Integer>> cursor = elements.first();
-         * while (cursor!=null) {
-         * if(cursor.element().getLeft().equals(elem))
-         * acc += cursor.element().getRight();
-         * cursor = elements.next(cursor);
-         * }
-         * return acc;
-         */
     }
 
     @Override
     public int size() {
         return size;
-        /*
-         * int acc = 0;
-         * Position<Pair<E,Integer>> cursor = elements.first();
-         * while (cursor!=null) {
-         * acc += cursor.element().getRight();
-         * cursor = elements.next(cursor);
-         * }
-         * return acc;
-         */
     }
 
     @Override
