@@ -161,8 +161,17 @@ public class MultiSetList<E> implements MultiSet<E> {
 
     @Override
     public MultiSet<E> intersection(MultiSet<E> s) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'intersection'");
+        MultiSet<E> res = new MultiSetList<E>();
+
+        Position<Pair<E, Integer>> cursor = elements.first();
+        while (cursor != null) {
+            E elem = cursor.element().getLeft();
+            if(s.multiplicity(elem)!=0)
+                res.add(elem, cursor.element().getRight()<s.multiplicity(elem)?cursor.element().getRight():s.multiplicity(elem));
+            cursor = elements.next(cursor);
+        }
+
+        return res;
     }
 
     @Override
@@ -177,23 +186,6 @@ public class MultiSetList<E> implements MultiSet<E> {
             cursor = elements.next(cursor);
         }
         return res;
-
-        /*
-         * boolean res = true;
-         * Position<Pair<E, Integer>> cursor = elements.first();
-         * while (cursor != null && res) {
-         * boolean touched = false;
-         * E elem = cursor.element().getLeft();
-         * for (E elemS : s.elements()) {
-         * if (elem.equals(elemS)) {
-         * 
-         * }
-         * }
-         * // if(cursor.element().getLeft().equals(cursor))
-         * cursor = elements.next(cursor);
-         * }
-         * return res;
-         */
     }
 
     public static void main(String[] args) {
