@@ -29,87 +29,127 @@ public class MultiSetList<E> implements MultiSet<E> {
         this.size = 0;
     }
 
+    private void modElem(E elem, int n) {
+        boolean done = false;
+        Position<Pair<E, Integer>> cursor = elements.first();
+        while (cursor != null && !done) {
+            if (cursor.element().getLeft().equals(elem)) {
+                cursor.element().setRight(cursor.element().getRight() + n);
+                if (cursor.element().getRight() == 0) // Only for remove
+                    elements.remove(cursor);
+                done = true;
+            }
+            cursor = elements.next(cursor);
+
+        }
+        size += n;
+    }
+
     @Override
     public void add(E elem, int n) {
         if (n < 0)
             throw new IllegalArgumentException("Must provide positive quantity to add");
 
-        if(multiplicity(elem))
+        if (multiplicity(elem) == 0) {
+            elements.addLast(new Pair<>(elem, n));
+        } else {
+            boolean done = false;
+            Position<Pair<E, Integer>> cursor = elements.first();
+            while (cursor != null && !done) {
+                if (cursor.element().getLeft().equals(elem)) {
+                    cursor.element().setRight(cursor.element().getRight() + n);
+                    done = true;
+                }
+                cursor = elements.next(cursor);
+            }
+        }
 
-        elements.addLast(new Pair<>(elem,n));
-        size+=n;
+        size += n;
     }
 
     @Override
     public int remove(E elem, int n) {
-        // We count the number of elements we can delete
-        if(n<multiplicity(elem))
-            return 0;
-        
+        if (n < 0)
+            throw new IllegalArgumentException("Must provide positive quantity to add");
 
-        // TODO remember to decrease size
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'remove'");
+        if (n < multiplicity(elem))
+            return 0;
+        else {
+            boolean done = false;
+            Position<Pair<E, Integer>> cursor = elements.first();
+            while (cursor != null && !done) {
+                if (cursor.element().getLeft().equals(elem)) {
+                    cursor.element().setRight(cursor.element().getRight() - n);
+                    if (cursor.element().getRight() == 0)
+                        elements.remove(cursor);
+                    done = true;
+                }
+                cursor = elements.next(cursor);
+            }
+        }
+        size -= n;
+        return n;
     }
 
     @Override
     public int multiplicity(E elem) {
         int acc = 0;
-        Position<Pair<E,Integer>> cursor = elements.first();
-        while (cursor!=null&&acc==0) {
-            if(cursor.element().getLeft().equals(elem))
+        Position<Pair<E, Integer>> cursor = elements.first();
+        while (cursor != null && acc == 0) {
+            if (cursor.element().getLeft().equals(elem))
                 acc = cursor.element().getRight();
             cursor = elements.next(cursor);
         }
         return acc;
 
         /*
-        int acc = 0;
-        Position<Pair<E,Integer>> cursor = elements.first();
-        while (cursor!=null) {
-            if(cursor.element().getLeft().equals(elem))
-                acc += cursor.element().getRight();
-            cursor = elements.next(cursor);
-        }
-        return acc;
-        */
+         * int acc = 0;
+         * Position<Pair<E,Integer>> cursor = elements.first();
+         * while (cursor!=null) {
+         * if(cursor.element().getLeft().equals(elem))
+         * acc += cursor.element().getRight();
+         * cursor = elements.next(cursor);
+         * }
+         * return acc;
+         */
     }
 
     @Override
     public int size() {
         return size;
-        /* 
-        int acc = 0;
-        Position<Pair<E,Integer>> cursor = elements.first();
-        while (cursor!=null) {
-            acc += cursor.element().getRight();
-            cursor = elements.next(cursor);
-        }
-        return acc;*/
+        /*
+         * int acc = 0;
+         * Position<Pair<E,Integer>> cursor = elements.first();
+         * while (cursor!=null) {
+         * acc += cursor.element().getRight();
+         * cursor = elements.next(cursor);
+         * }
+         * return acc;
+         */
     }
 
     @Override
     public boolean isEmpty() {
-        return elements.isEmpty()?true:false;
+        return elements.isEmpty() ? true : false;
     }
 
     @Override
     public PositionList<E> elements() {
         PositionList<E> acc = new NodePositionList<E>();
-        Position<Pair<E,Integer>> cursor = elements.first();
-        while (cursor!=null) {
+        Position<Pair<E, Integer>> cursor = elements.first();
+        while (cursor != null) {
             boolean contains = false;
             Position<E> cursorAcc = acc.first();
-                while (cursorAcc!=null) {
-                    contains = cursorAcc.element().equals(cursor.element().getLeft());
-                    if(contains)
-                        break;
-                    cursorAcc = acc.next(cursorAcc);
-                }
-            
-            if(contains)
+            while (cursorAcc != null) {
+                contains = cursorAcc.element().equals(cursor.element().getLeft());
+                if (contains)
+                    break;
+                cursorAcc = acc.next(cursorAcc);
+            }
+
+            if (contains)
                 acc.addLast(cursor.element().getLeft());
-            
+
             cursor = elements.next(cursor);
         }
         return acc;
