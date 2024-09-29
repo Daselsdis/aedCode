@@ -52,8 +52,10 @@ public class MultiSetList<E> implements MultiSet<E> {
             throw new IllegalArgumentException("Must provide positive quantity to add");
 
         if (multiplicity(elem) == 0) {
-            if (n != 0)
+            if (n != 0) {
                 elements.addLast(new Pair<>(elem, n));
+                size += n;
+            }
         } else {
             modElem(elem, n);
         }
@@ -148,12 +150,11 @@ public class MultiSetList<E> implements MultiSet<E> {
 
         Position<Pair<E, Integer>> cursor = elements.first();
         while (cursor != null) {
-            res.add(cursor.element().getLeft(), cursor.element().getRight());
+            E elem = cursor.element().getLeft();
+            int mult = Math.max(cursor.element().getRight() - s.multiplicity(elem), 0);
+            if (mult > 0)
+                res.add(elem, mult);
             cursor = elements.next(cursor);
-        }
-
-        for (E elem : s.elements()) {
-            res.remove(elem, s.multiplicity(elem));
         }
 
         return res;
@@ -166,8 +167,9 @@ public class MultiSetList<E> implements MultiSet<E> {
         Position<Pair<E, Integer>> cursor = elements.first();
         while (cursor != null) {
             E elem = cursor.element().getLeft();
-            if(s.multiplicity(elem)!=0)
-                res.add(elem, cursor.element().getRight()<s.multiplicity(elem)?cursor.element().getRight():s.multiplicity(elem));
+            if (s.multiplicity(elem) != 0)
+                res.add(elem, cursor.element().getRight() < s.multiplicity(elem) ? cursor.element().getRight()
+                        : s.multiplicity(elem));
             cursor = elements.next(cursor);
         }
 
@@ -186,26 +188,6 @@ public class MultiSetList<E> implements MultiSet<E> {
             cursor = elements.next(cursor);
         }
         return res;
-    }
-
-    public static void main(String[] args) {
-        MultiSet<String> m = new MultiSetList<>();
-        m.add("a", 1);
-        m.add("b", 2);
-        m.add("a", 1);
-        m.add("c", 1);
-        System.out.println(m.multiplicity("a"));
-        System.out.println(m.multiplicity("b"));
-        System.out.println(m.multiplicity("c"));
-        System.out.println(m.remove("a", 3));
-        System.out.println(m.remove("a", 1));
-        System.out.println(m.remove("b", 2));
-        System.out.println(m.remove("c", 0));
-
-        System.out.println(m.elements());
-        System.out.println(m.multiplicity("a"));
-        System.out.println(m.multiplicity("b"));
-        System.out.println(m.multiplicity("c"));
     }
 
 }
