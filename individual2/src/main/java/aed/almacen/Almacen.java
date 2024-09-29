@@ -44,8 +44,8 @@ public class Almacen implements ClienteAPI, AlmacenAPI, ProductorAPI {
     public int buscarbinProd(String id) {
         int low = 0;
         int high = productos.size() - 1;
-        boolean done = false;
         int res = -1;
+        boolean done = false;
 
         while (low <= high && !done) {
             int mid = (low + high) / 2;
@@ -61,35 +61,23 @@ public class Almacen implements ClienteAPI, AlmacenAPI, ProductorAPI {
             else if (comp > 0)
                 high = mid - 1;
         }
+
         if (!done)
             res = high;
 
         return res;
     }
 
-    public int buscarbincompra(int id) {
-        int low = 0;
-        int high = compras.size() - 1;
-        boolean done = false;
+    public int buscarCompra(int id) {
         int res = -1;
-
-        while (low <= high && !done) {
-            int mid = (low + high) / 2;
-            Compra midObj = compras.get(mid);
-
-            int comp = midObj.getCompraId().compareTo(id);
-
-            if (comp == 0) {
-                res = mid;
+        boolean done = false;
+        for (int i = 0; i < compras.size() && !done; i++) {
+            if (compras.get(i).getCompraId() == id) {
+                res = i;
                 done = true;
-            } else if (comp < 0)
-                low = mid + 1;
-            else if (comp > 0)
-                high = mid - 1;
-        }
-        if (!done)
-            res = high;
+            }
 
+        }
         return res;
     }
 
@@ -119,7 +107,7 @@ public class Almacen implements ClienteAPI, AlmacenAPI, ProductorAPI {
 
     @Override
     public Compra getCompra(Integer compraId) {
-        int id = buscarbincompra(compraId);
+        int id = buscarCompra(compraId);
         if (id == -1)
             return null;
         else
@@ -176,7 +164,7 @@ public class Almacen implements ClienteAPI, AlmacenAPI, ProductorAPI {
 
     }
 
-    @Override
+    /*@Override
     public Integer pedir(String clienteId, String productoId, int cantidad) {
         if (buscarbinProd(productoId) == -1)
             return null;
@@ -190,16 +178,29 @@ public class Almacen implements ClienteAPI, AlmacenAPI, ProductorAPI {
         return compra.getCompraId();
 
     }
+*/
+public Integer pedir(String clienteId, String productoId, int cantidad) {
 
+    Producto producto_Pedido = getProducto(productoId);
+
+    if (producto_Pedido != null && producto_Pedido.getCantidadDisponible() >= cantidad) {
+      Compra nuevaCompra = new Compra(clienteId, productoId, cantidad);
+      compras.add(compras.size(), nuevaCompra);
+      producto_Pedido.setCantidadDisponible(producto_Pedido.getCantidadDisponible() - cantidad);
+      return nuevaCompra.getCompraId();
+    } else {
+      return null;
+    }
+
+    // throw new UnsupportedOperationException("Unimplemented method 'pedir'");
+  }
     public static void main(String[] args) {
         Almacen a = new Almacen();
-
-        a.reabastecerProducto("t-shirt", 1);
-        a.reabastecerProducto("t-shirt", 1);
-        a.reabastecerProducto("helado", 2);
-        a.pedir("julio", "helado", 4);
+        a.reabastecerProducto("movil", 1);
+        a.reabastecerProducto("t-shirt", 3);
+        a.getCompra(111111);
         a.pedir("susana", "t-shirt", 4);
-        Producto b = a.getProducto("helado");
+        a.getProducto("t-shirt");
     }
 
 }

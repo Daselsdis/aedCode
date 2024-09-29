@@ -1,0 +1,44 @@
+
+public static <E> boolean existsP (PositionList<E> list, Predicate<E> pred){
+	if(list ==null||list.size() ==0){
+		return false;
+	}
+
+
+
+
+private sttic boolean eqNull(Object o1, Object o2){
+	return o1==o2||o1!=null&&o1.equals(o2);
+}
+
+public static <E> boolean allEquals (PositionList<E> list, Predicate<E> pred){
+	if(list == null ||lilst.size()==0){
+		return false;
+	}
+
+	Position<E> cursor = list.first();
+	booland all == true;
+	while( cursor != null &&all){
+		if(pred.test(cursor.element())
+			all=false;
+		else
+			cursor = list.next(cursor);
+	}
+	return all;
+}
+
+public static <E> boolean existsP (PositionList<E> list, Predicate<E> pred){
+	if(list ==null||list.size()==0){
+		return false;
+	}
+
+	Position<E> cursor = list.first();
+	while(cursor!=null&&pred.test(cursor.element()){
+		cursor = list.next(cursor);
+	}
+
+	return cursor !=null;
+
+}
+
+BuFunction<PositionList<String>, Integer, Boolean> air = (list,n)->allAirBBLow(list,n);
