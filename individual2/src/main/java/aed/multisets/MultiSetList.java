@@ -37,9 +37,10 @@ public class MultiSetList<E> implements MultiSet<E> {
                 cursor.element().setRight(cursor.element().getRight() + n);
                 if (cursor.element().getRight() == 0) // Only for remove
                     elements.remove(cursor);
-                done = true;
+                done = true; // TODO can I not use a break??????
             }
-            cursor = elements.next(cursor);
+            if (!done)
+                cursor = elements.next(cursor);
 
         }
         size += n;
@@ -51,20 +52,11 @@ public class MultiSetList<E> implements MultiSet<E> {
             throw new IllegalArgumentException("Must provide positive quantity to add");
 
         if (multiplicity(elem) == 0) {
-            elements.addLast(new Pair<>(elem, n));
+            if (n != 0)
+                elements.addLast(new Pair<>(elem, n));
         } else {
-            boolean done = false;
-            Position<Pair<E, Integer>> cursor = elements.first();
-            while (cursor != null && !done) {
-                if (cursor.element().getLeft().equals(elem)) {
-                    cursor.element().setRight(cursor.element().getRight() + n);
-                    done = true;
-                }
-                cursor = elements.next(cursor);
-            }
+            modElem(elem, n);
         }
-
-        size += n;
     }
 
     @Override
@@ -72,23 +64,12 @@ public class MultiSetList<E> implements MultiSet<E> {
         if (n < 0)
             throw new IllegalArgumentException("Must provide positive quantity to add");
 
-        if (n < multiplicity(elem))
+        if (n > multiplicity(elem))
             return 0;
         else {
-            boolean done = false;
-            Position<Pair<E, Integer>> cursor = elements.first();
-            while (cursor != null && !done) {
-                if (cursor.element().getLeft().equals(elem)) {
-                    cursor.element().setRight(cursor.element().getRight() - n);
-                    if (cursor.element().getRight() == 0)
-                        elements.remove(cursor);
-                    done = true;
-                }
-                cursor = elements.next(cursor);
-            }
+            modElem(elem, -n);
+            return n;
         }
-        size -= n;
-        return n;
     }
 
     @Override
@@ -138,18 +119,7 @@ public class MultiSetList<E> implements MultiSet<E> {
         PositionList<E> acc = new NodePositionList<E>();
         Position<Pair<E, Integer>> cursor = elements.first();
         while (cursor != null) {
-            boolean contains = false;
-            Position<E> cursorAcc = acc.first();
-            while (cursorAcc != null) {
-                contains = cursorAcc.element().equals(cursor.element().getLeft());
-                if (contains)
-                    break;
-                cursorAcc = acc.next(cursorAcc);
-            }
-
-            if (contains)
-                acc.addLast(cursor.element().getLeft());
-
+            acc.addLast(cursor.element().getLeft());
             cursor = elements.next(cursor);
         }
         return acc;
@@ -157,14 +127,36 @@ public class MultiSetList<E> implements MultiSet<E> {
 
     @Override
     public MultiSet<E> sum(MultiSet<E> s) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'sum'");
+        MultiSet<E> res = new MultiSetList<E>();
+
+        Position<Pair<E, Integer>> cursor = elements.first();
+        while (cursor != null) {
+            res.add(cursor.element().getLeft(), cursor.element().getRight());
+            cursor = elements.next(cursor);
+        }
+
+        for (E elem : s.elements()) {
+            res.add(elem, s.multiplicity(elem));
+        }
+
+        return res;
     }
 
     @Override
     public MultiSet<E> minus(MultiSet<E> s) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'minus'");
+        MultiSet<E> res = new MultiSetList<E>();
+
+        Position<Pair<E, Integer>> cursor = elements.first();
+        while (cursor != null) {
+            res.add(cursor.element().getLeft(), cursor.element().getRight());
+            cursor = elements.next(cursor);
+        }
+
+        for (E elem : s.elements()) {
+            res.remove(elem, s.multiplicity(elem));
+        }
+
+        return res;
     }
 
     @Override
@@ -175,8 +167,33 @@ public class MultiSetList<E> implements MultiSet<E> {
 
     @Override
     public boolean subsetEqual(MultiSet<E> s) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'subsetEqual'");
+        boolean res = true;
+
+        Position<Pair<E, Integer>> cursor = elements.first();
+        while (cursor != null && res) {
+            E elem = cursor.element().getLeft();
+            if (s.multiplicity(elem) < cursor.element().getRight())
+                res = false;
+            cursor = elements.next(cursor);
+        }
+        return res;
+
+        /*
+         * boolean res = true;
+         * Position<Pair<E, Integer>> cursor = elements.first();
+         * while (cursor != null && res) {
+         * boolean touched = false;
+         * E elem = cursor.element().getLeft();
+         * for (E elemS : s.elements()) {
+         * if (elem.equals(elemS)) {
+         * 
+         * }
+         * }
+         * // if(cursor.element().getLeft().equals(cursor))
+         * cursor = elements.next(cursor);
+         * }
+         * return res;
+         */
     }
 
     public static void main(String[] args) {
@@ -185,7 +202,18 @@ public class MultiSetList<E> implements MultiSet<E> {
         m.add("b", 2);
         m.add("a", 1);
         m.add("c", 1);
+        System.out.println(m.multiplicity("a"));
+        System.out.println(m.multiplicity("b"));
+        System.out.println(m.multiplicity("c"));
+        System.out.println(m.remove("a", 3));
+        System.out.println(m.remove("a", 1));
+        System.out.println(m.remove("b", 2));
+        System.out.println(m.remove("c", 0));
+
         System.out.println(m.elements());
+        System.out.println(m.multiplicity("a"));
+        System.out.println(m.multiplicity("b"));
+        System.out.println(m.multiplicity("c"));
     }
 
 }
