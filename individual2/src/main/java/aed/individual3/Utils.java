@@ -2,8 +2,6 @@ package aed.individual3;
 
 import java.util.Iterator;
 
-import es.upm.aedlib.positionlist.NodePositionList;
-
 public class Utils {
     public static boolean isArithmeticSequence(Iterable<Integer> l) {
         // This is a size optimization, when an iterator is filled with filler nulls and
