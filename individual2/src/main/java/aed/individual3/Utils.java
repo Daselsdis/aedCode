@@ -6,46 +6,44 @@ import es.upm.aedlib.positionlist.NodePositionList;
 
 public class Utils {
     public static boolean isArithmeticSequence(Iterable<Integer> l) {
-        
+        // This is a size optimization, when an iterator is filled with filler nulls and
+        // or only has 2 or less significant Integers, this is a really small
+        // improvement, but in my computer, the average execution time was reduced
+        // slightly.
         Iterator<Integer> itSize = l.iterator();
-        int last = 0;// TODO
         int size = 0;
         while (itSize.hasNext()) {
             Integer temp = itSize.next();
-            if(temp == null)
+            if (temp == null)
                 continue;
             size++;
-            last = temp;
         }
         if (size <= 2)
             return true;
 
-        //int acc = size % 2 == 0 ? null : last; // sets the value of the substraction to the
-
+        // Main processing, opne by one we check for the appropiate state of the checker
+        // variables and in time, check for the conditions asked.
         Iterator<Integer> it = l.iterator();
-        Integer substraction = null;
+        Integer difference = null;
         Integer numPrev = null;
         boolean isTrue = true;
         while (it.hasNext() && isTrue) {
             Integer numAct = it.next();
-            if (null == numAct)
+            if (null == numAct) // we skip nulls
                 continue;
             if (numPrev == null) { // primera ronda
                 numPrev = numAct;
             } else {
-                if (substraction == null) {
-                    substraction = numAct - numPrev;
-                } else {
-                    int currentSubstraction = numAct - numPrev;
-                    isTrue = substraction == currentSubstraction ? true : false;
+                if (difference == null) { // first substraction
+                    difference = numAct - numPrev;
+                } else { // consequent substrations, comparison, we stop early via isTrue as soon as we
+                         // detect the condition has been failed
+                    int currentDifference = numAct - numPrev;
+                    isTrue = difference == currentDifference ? true : false;
                 }
-                numPrev = numAct;
+                numPrev = numAct; // either way, we go next
             }
         }
         return isTrue;
-    }
-
-    public static void main(String[] args) {
-        System.out.println(isArithmeticSequence(new NodePositionList<Integer>(new Integer[] { null,-7,3,13,23 })));
     }
 }
