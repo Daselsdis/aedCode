@@ -6,22 +6,16 @@ import es.upm.aedlib.positionlist.NodePositionList;
 
 public class Utils {
     public static boolean isArithmeticSequence(Iterable<Integer> l) {
-
-        Iterator<Integer> itPurge = l.iterator();
-        while (itPurge.hasNext()) {
-            boolean isNull = null == itPurge.next();
-            if (isNull) {
-                itPurge.remove();
-            }
-        }
-
+        
         Iterator<Integer> itSize = l.iterator();
-
         int last = 0;// TODO
         int size = 0;
         while (itSize.hasNext()) {
+            Integer temp = itSize.next();
+            if(temp == null)
+                continue;
             size++;
-            last = itSize.next();
+            last = temp;
         }
         if (size <= 2)
             return true;
@@ -52,6 +46,6 @@ public class Utils {
     }
 
     public static void main(String[] args) {
-        System.out.println(isArithmeticSequence(new NodePositionList<Integer>(new Integer[] { -7,3,13,23 })));
+        System.out.println(isArithmeticSequence(new NodePositionList<Integer>(new Integer[] { null,-7,3,13,23 })));
     }
 }
