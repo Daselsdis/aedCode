@@ -13,7 +13,7 @@ public class Utils {
         while (itSize.hasNext()) {
             Integer temp = itSize.next();
             if (temp == null)
-                continue;
+                continue; //TODO OPTIMIZE, STOP COUNTING SIZE PAST 3
             size++;
         }
         if (size <= 2)
@@ -36,8 +36,7 @@ public class Utils {
                     difference = numAct - numPrev;
                 } else { // consequent substrations, comparison, we stop early via isTrue as soon as we
                          // detect the condition has been failed
-                    int currentDifference = numAct - numPrev;
-                    isTrue = difference == currentDifference ? true : false;
+                    isTrue = difference == numAct - numPrev ? true : false;
                 }
                 numPrev = numAct; // either way, we go next
             }
