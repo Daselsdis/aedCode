@@ -10,10 +10,10 @@ public class Utils {
         // slightly.
         Iterator<Integer> itSize = l.iterator();
         int size = 0;
-        while (itSize.hasNext()) {
+        while (itSize.hasNext()&&size<3) { // Past 3 we don't care about size
             Integer temp = itSize.next();
             if (temp == null)
-                continue; //TODO OPTIMIZE, STOP COUNTING SIZE PAST 3
+                continue;
             size++;
         }
         if (size <= 2)
