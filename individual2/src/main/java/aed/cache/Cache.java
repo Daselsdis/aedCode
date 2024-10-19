@@ -66,15 +66,15 @@ public class Cache<Key, Value> {
             }
 
             // Either way Add new CacheCell as it is not a repe key
-            cacheContents.put(key, new CacheCell<Key, Value>(val, false, keyListLRU.first()));
+            cacheContents.put(key, new CacheCell<Key, Value>(val, false, null)); // We do not assign Pos here, opt?
         }
 
         Position<Key> cursorUpdatePos = keyListLRU.first();
         while (cursorUpdatePos != cursorRepe) { // Untill null if not repe, until touched val if repe
-
+            cacheContents.get(cursorUpdatePos.element()).setPos(cursorUpdatePos);
+            cursorUpdatePos = keyListLRU.next(cursorUpdatePos);
         }
 
-        // CAMBIA este metodo
         return val;
     }
 
