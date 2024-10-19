@@ -36,12 +36,19 @@ public class Cache<Key, Value> {
         this.keyListLRU = new NodePositionList<Key>();
     }
 
-    public Key addToLRU(Key key) {// * Returns dropped key or null, adds key at start */
+    public void addToLRU(Key key) {// * Adds keys to lru and deals with fropping from cache */
+        // Check for dropping keys off the cache
         Key droppedKey = null;
         if (keyListLRU.size() == maxCacheSize) // If size is max, we are due to drop the last Key.
             droppedKey = keyListLRU.remove(keyListLRU.last());
         keyListLRU.addFirst(key); // Now we should be able to add our new Key at the start.
-        return droppedKey;
+
+        // Dealing with dropped key
+        if (droppedKey != null) { // If we dropped a value (accessed by it's key)
+            CacheCell<Key, Value> droppedCell = cacheContents.remove(droppedKey);
+            if (droppedCell.getDirty())
+                mainMemory.write(droppedKey, droppedCell.getValue());
+        }
     }
 
     // Devuelve el valor que corresponde a una clave "Key"
@@ -51,6 +58,10 @@ public class Cache<Key, Value> {
 
         if (val != null) { // If key is actually in storage we may cache something
             // Check for repeating Keys, else check for dropping
+
+            if (cacheContents.containsKey(key)) {
+                val = cacheContents.get(key).getValue();
+            }
             boolean repe = false;
             Position<Key> cursorRepe = keyListLRU.first();
             while (cursorRepe != null && !repe) {
@@ -64,20 +75,10 @@ public class Cache<Key, Value> {
                 else
                     keyListLRU.addFirst(keyListLRU.remove(keyListLRU.last()));
             } else {
-                // Check for dropping keys off the cache
-                Key droppedKey = addToLRU(key);
-
-                // Dealing with dropped key
-                if (droppedKey != null) { // If we dropped a value (accessed by it's key)
-                    CacheCell<Key, Value> droppedCell = cacheContents.remove(droppedKey);
-                    if (droppedCell.getDirty())
-                        mainMemory.write(droppedKey, droppedCell.getValue());
-                }
-
+                addToLRU(key);
                 // Either way Add new CacheCell as it is not a repe key
-                cacheContents.put(key, new CacheCell<Key, Value>(val, false, keyListLRU.first())); // TODO We do not
-                                                                                                   // assign Pos here,
-                // opt?
+                cacheContents.put(key, new CacheCell<Key, Value>(val, false, keyListLRU.first()));
+                // TODO We do not assign Pos here, opt?
             }
 
             Position<Key> cursorUpdatePos = keyListLRU.first();
@@ -85,6 +86,7 @@ public class Cache<Key, Value> {
                 cacheContents.get(cursorUpdatePos.element()).setPos(cursorUpdatePos);
                 cursorUpdatePos = keyListLRU.next(cursorUpdatePos);
             }
+
         }
 
         return val;
@@ -109,7 +111,7 @@ public class Cache<Key, Value> {
         if (!found) { // not cached? cache. already at lru top
             Value val = get(key);
             if (val == null) {
-                keyListLRU.addFirst(key);
+                addToLRU(key);
                 cacheContents.put(key, new CacheCell<Key, Value>(val, false, keyListLRU.first()));
             }
         } else { // cached. Move to lru top
@@ -137,10 +139,13 @@ public class Cache<Key, Value> {
     }
 
     public static void main(String[] args) {
-        Cache<Integer, String> cache = new Cache<Integer, String>(2,
-                new Storage<Integer, String>(new Integer[] { 6, 1, 5, 4, 3, 2 },
-                        new String[] { "ola", "namaste", "rimaykullayki", "privet", "ciao", "zdravo" }));
-        System.out.println(cache.get(6));
-        cache.put(6, "hei");
+        Cache<Integer, String> cache = new Cache<Integer, String>(4,
+                new Storage<Integer, String>(new Integer[] { 4, 1, 12, 9, 6, 11, 3, 8, 5, 2, 7, 10 },
+                        new String[] { "hello", "namaste", "salaam", "ola", "rimaykullayki", "zdravo", "hola", "privet",
+                                "hi", "bon dia", "hallo", "ciao" }));
+        System.out.println(cache.get(11));
+        System.out.println(cache.get(10));
+        System.out.println(cache.get(12));
+        System.out.println(cache.get(11));
     }
 }
