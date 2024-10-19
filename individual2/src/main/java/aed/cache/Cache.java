@@ -48,7 +48,7 @@ public class Cache<Key, Value> {
 
     // Devuelve el valor que corresponde a una clave "Key"
     public Value get(Key key) {
-        // Retrieve value from key off the storage
+        // Get value from key off cache or storage (priority cache in case it's dirty)
         Value val = null;
         if (cacheContents.containsKey(key))
             val = cacheContents.get(key).getValue();
@@ -56,7 +56,7 @@ public class Cache<Key, Value> {
             val = mainMemory.read(key);
 
         if (val != null) { // If key is actually in storage or cache, we may cache something
-            // Check for repeating Keys, else check for dropping
+            // Check for repeating Keys
             boolean repe = false;
             Position<Key> cursorRepe = keyListLRU.first();
             while (cursorRepe != null && !repe) {
@@ -65,17 +65,20 @@ public class Cache<Key, Value> {
             }
 
             if (repe) { // Displace the repe element to the start
-                if (cursorRepe != null)
+                if (cursorRepe != null)// If the cursor when it was found was null, it was last, if not, it was prev
                     keyListLRU.addFirst(keyListLRU.remove(keyListLRU.prev(cursorRepe)));
                 else
                     keyListLRU.addFirst(keyListLRU.remove(keyListLRU.last()));
-            } else {
+
+            } else { // It's a new element, we "addToLRU" (manages dropping for us) and simply put it
                 addToLRU(key);
                 // Either way Add new CacheCell as it is not a repe key
-                cacheContents.put(key, new CacheCell<Key, Value>(val, false, keyListLRU.first()));
-                // TODO We do not assign Pos here, opt?
+                cacheContents.put(key, new CacheCell<Key, Value>(val, false, null));
+                // We do not assign Pos here, Slight optimization, as we will set it again on
+                // update all CacheCells' pos trackers.
             }
 
+            // Update all CacheCells' position trackers.
             Position<Key> cursorUpdatePos = keyListLRU.first();
             while (cursorUpdatePos != cursorRepe) { // Untill null if not repe, until touched val if repe
                 cacheContents.get(cursorUpdatePos.element()).setPos(cursorUpdatePos);
@@ -103,12 +106,14 @@ public class Cache<Key, Value> {
                 addToLRU(key);
                 cacheContents.put(key, new CacheCell<Key, Value>(val, false, keyListLRU.first()));
             }
-        } else { // cached. Move to lru top
-            if (cursorFound != null)
+        } else { // cached
+            // Move to lru top
+            if (cursorFound != null) // If the cursor when it was found was null, it's last, if not, it's prev
                 keyListLRU.addFirst(keyListLRU.remove(keyListLRU.prev(cursorFound)));
             else
                 keyListLRU.addFirst(keyListLRU.remove(keyListLRU.last()));
 
+            // Update all CacheCell's position tracker.
             Position<Key> cursorUpdatePos = keyListLRU.first();
             while (cursorUpdatePos != cursorFound) { // Untill null if not repe, until touched val if repe
                 cacheContents.get(cursorUpdatePos.element()).setPos(cursorUpdatePos);
