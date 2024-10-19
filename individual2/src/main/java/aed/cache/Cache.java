@@ -36,12 +36,20 @@ public class Cache<Key, Value> {
         this.keyListLRU = new NodePositionList<Key>();
     }
 
+    public Key addToLRU(Key key) {// * Returns dropped key or null, adds key at start */
+        Key droppedKey = null;
+        if (keyListLRU.size() == maxCacheSize) // If size is max, we are due to drop the last Key.
+            droppedKey = keyListLRU.remove(keyListLRU.last());
+        keyListLRU.addFirst(key); // Now we should be able to add our new Key at the start.
+        return droppedKey;
+    }
+
     // Devuelve el valor que corresponde a una clave "Key"
     public Value get(Key key) {
         // Retrieve value from key off the storage
         Value val = mainMemory.read(key);
 
-        if (val != null) {
+        if (val != null) { // If key is actually in storage we may cache something
             // Check for repeating Keys, else check for dropping
             boolean repe = false;
             Position<Key> cursorRepe = keyListLRU.first();
@@ -51,13 +59,13 @@ public class Cache<Key, Value> {
             }
 
             if (repe) { // Displace the repe element to the start
-                keyListLRU.addFirst(keyListLRU.remove(keyListLRU.prev(cursorRepe)));
+                if (cursorRepe != null)
+                    keyListLRU.addFirst(keyListLRU.remove(keyListLRU.prev(cursorRepe)));
+                else
+                    keyListLRU.addFirst(keyListLRU.remove(keyListLRU.last()));
             } else {
                 // Check for dropping keys off the cache
-                Key droppedKey = null;
-                if (keyListLRU.size() == maxCacheSize) // If size is max, we are due to drop the last Key.
-                    droppedKey = keyListLRU.remove(keyListLRU.last());
-                keyListLRU.addFirst(key); // Now we should be able to add our new Key at the start.
+                Key droppedKey = addToLRU(key);
 
                 // Dealing with dropped key
                 if (droppedKey != null) { // If we dropped a value (accessed by it's key)
@@ -67,7 +75,9 @@ public class Cache<Key, Value> {
                 }
 
                 // Either way Add new CacheCell as it is not a repe key
-                cacheContents.put(key, new CacheCell<Key, Value>(val, false, null)); // We do not assign Pos here, opt?
+                cacheContents.put(key, new CacheCell<Key, Value>(val, false, keyListLRU.first())); // TODO We do not
+                                                                                                   // assign Pos here,
+                // opt?
             }
 
             Position<Key> cursorUpdatePos = keyListLRU.first();
@@ -82,12 +92,55 @@ public class Cache<Key, Value> {
 
     // Establece un valor nuevo para la clave en la memoria cache
     public void put(Key key, Value value) {
+        // boolean keyExists = false;
+        // Iterator<Entry<Key,Value>> it = mainMemory.entries().iterator();
+        // while (it.hasNext() && !keyExists) {
+        // keyExists = it.next().getKey() == key;
+        // }
 
-        // CAMBIA este metodo
+        // Is modded key in cache?
+        boolean found = false;
+        Position<Key> cursorFound = keyListLRU.first();
+        while (cursorFound != null && !found) {
+            found = cursorFound.element() == key;
+            cursorFound = keyListLRU.next(cursorFound);
+        }
+
+        if (!found) { // not cached? cache. already at lru top
+            Value val = get(key);
+            if (val == null) {
+                keyListLRU.addFirst(key);
+                cacheContents.put(key, new CacheCell<Key, Value>(val, false, keyListLRU.first()));
+            }
+        } else { // cached. Move to lru top
+            if (cursorFound != null)
+                keyListLRU.addFirst(keyListLRU.remove(keyListLRU.prev(cursorFound)));
+            else
+                keyListLRU.addFirst(keyListLRU.remove(keyListLRU.last()));
+
+            Position<Key> cursorUpdatePos = keyListLRU.first();
+            while (cursorUpdatePos != cursorFound) { // Untill null if not repe, until touched val if repe
+                cacheContents.get(cursorUpdatePos.element()).setPos(cursorUpdatePos);
+                cursorUpdatePos = keyListLRU.next(cursorUpdatePos);
+            }
+        }
+
+        // Is new value diff? if so, dirty and set
+        cacheContents.get(key).setDirty(cacheContents.get(key).getValue() != value);
+        if (cacheContents.get(key).getDirty())
+            cacheContents.get(key).setValue(value);
     }
 
     // NO CAMBIA
     public String toString() {
         return "cache";
+    }
+
+    public static void main(String[] args) {
+        Cache<Integer, String> cache = new Cache<Integer, String>(2,
+                new Storage<Integer, String>(new Integer[] { 6, 1, 5, 4, 3, 2 },
+                        new String[] { "ola", "namaste", "rimaykullayki", "privet", "ciao", "zdravo" }));
+        System.out.println(cache.get(6));
+        cache.put(6, "hei");
     }
 }
