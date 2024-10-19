@@ -43,29 +43,37 @@ public class Cache<Key, Value> {
 
         // Check for repeating Keys, else check for dropping
         boolean repe = false;
-        Iterator<Key> it = keyListLRU.iterator();
-        while (it.hasNext() && !repe)
-            repe = it.next() == key;
+        Position<Key> cursorRepe = keyListLRU.first();
+        while (cursorRepe != null && !repe) {
+            repe = cursorRepe.element() == key;
+            cursorRepe = keyListLRU.next(cursorRepe);
+        }
 
-        if (repe) {
-            keyListLRU.addFirst(keyListLRU.remove(it.));
+        if (repe) { // Displace the repe element to the start
+            keyListLRU.addFirst(keyListLRU.remove(keyListLRU.prev(cursorRepe)));
         } else {
-
-            // Check for dropping values off the cache
+            // Check for dropping keys off the cache
             Key droppedKey = null;
             if (keyListLRU.size() == maxCacheSize) // If size is max, we are due to drop the last Key.
                 droppedKey = keyListLRU.remove(keyListLRU.last());
             keyListLRU.addFirst(key); // Now we should be able to add our new Key at the start.
 
-            // Dealing with dropped values
+            // Dealing with dropped key
             if (droppedKey != null) { // If we dropped a value (accessed by it's key)
                 CacheCell<Key, Value> droppedCell = cacheContents.remove(droppedKey);
                 if (droppedCell.getDirty())
                     mainMemory.write(droppedKey, droppedCell.getValue());
             }
+
+            // Either way Add new CacheCell as it is not a repe key
+            cacheContents.put(key, new CacheCell<Key, Value>(val, false, keyListLRU.first()));
         }
 
-        cacheContents.put(key, new CacheCell<Key, Value>(val, false, keyListLRU.first()));
+        Position<Key> cursorUpdatePos = keyListLRU.first();
+        while (cursorUpdatePos != cursorRepe) { // Untill null if not repe, until touched val if repe
+
+        }
+
         // CAMBIA este metodo
         return val;
     }
