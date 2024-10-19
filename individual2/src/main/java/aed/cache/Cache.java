@@ -1,10 +1,5 @@
 package aed.cache;
 
-import java.util.Iterator;
-
-//import java.util.Iterator;
-
-import es.upm.aedlib.Entry;
 import es.upm.aedlib.Position;
 import es.upm.aedlib.map.*;
 import es.upm.aedlib.positionlist.*;
@@ -54,18 +49,18 @@ public class Cache<Key, Value> {
     // Devuelve el valor que corresponde a una clave "Key"
     public Value get(Key key) {
         // Retrieve value from key off the storage
-        Value val = mainMemory.read(key);
+        Value val = null;
+        if (cacheContents.containsKey(key))
+            val = cacheContents.get(key).getValue();
+        else
+            val = mainMemory.read(key);
 
-        if (val != null) { // If key is actually in storage we may cache something
+        if (val != null) { // If key is actually in storage or cache, we may cache something
             // Check for repeating Keys, else check for dropping
-
-            if (cacheContents.containsKey(key)) {
-                val = cacheContents.get(key).getValue();
-            }
             boolean repe = false;
             Position<Key> cursorRepe = keyListLRU.first();
             while (cursorRepe != null && !repe) {
-                repe = cursorRepe.element() == key;
+                repe = cursorRepe.element().equals(key);
                 cursorRepe = keyListLRU.next(cursorRepe);
             }
 
@@ -94,17 +89,11 @@ public class Cache<Key, Value> {
 
     // Establece un valor nuevo para la clave en la memoria cache
     public void put(Key key, Value value) {
-        // boolean keyExists = false;
-        // Iterator<Entry<Key,Value>> it = mainMemory.entries().iterator();
-        // while (it.hasNext() && !keyExists) {
-        // keyExists = it.next().getKey() == key;
-        // }
-
         // Is modded key in cache?
         boolean found = false;
         Position<Key> cursorFound = keyListLRU.first();
         while (cursorFound != null && !found) {
-            found = cursorFound.element() == key;
+            found = cursorFound.element().equals(key);
             cursorFound = keyListLRU.next(cursorFound);
         }
 
@@ -136,16 +125,5 @@ public class Cache<Key, Value> {
     // NO CAMBIA
     public String toString() {
         return "cache";
-    }
-
-    public static void main(String[] args) {
-        Cache<Integer, String> cache = new Cache<Integer, String>(4,
-                new Storage<Integer, String>(new Integer[] { 4, 1, 12, 9, 6, 11, 3, 8, 5, 2, 7, 10 },
-                        new String[] { "hello", "namaste", "salaam", "ola", "rimaykullayki", "zdravo", "hola", "privet",
-                                "hi", "bon dia", "hallo", "ciao" }));
-        System.out.println(cache.get(11));
-        System.out.println(cache.get(10));
-        System.out.println(cache.get(12));
-        System.out.println(cache.get(11));
     }
 }

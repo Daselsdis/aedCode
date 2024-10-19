@@ -10,7 +10,8 @@ import es.upm.aedlib.indexedlist.ArrayIndexedList;
 public class AlmacenA implements ClienteAPI, AlmacenAPI, ProductorAPI {
 
   // Compras (sin ningun orden especial)
-  private ArrayIndexedList<Compra> compras;
+  @SuppressWarnings("unused")
+private ArrayIndexedList<Compra> compras;
   // Productos ordenados ascendamente usando el productoId de un Product.
   private ArrayIndexedList<Producto> productos;
 
@@ -26,6 +27,7 @@ public class AlmacenA implements ClienteAPI, AlmacenAPI, ProductorAPI {
 
 @Override
 public void reabastecerProducto(String productoId, int cantidad) {
+	@SuppressWarnings("unused")
 	int n=0;
 	boolean finalizar=false;
 	Producto nuevore= new Producto(productoId, cantidad);
@@ -84,36 +86,31 @@ public Compra getCompra(Integer compraId) {
 
 @Override
 public IndexedList<Producto> getProductos() {
-	// TODO Auto-generated method stub
 	return null;
 }
 
 @Override
 public IndexedList<Compra> getCompras() {
-	// TODO Auto-generated method stub
 	return null;
 }
 
 @Override
 public IndexedList<Compra> comprasCliente(String clienteId) {
-	// TODO Auto-generated method stub
 	return null;
 }
 
 @Override
 public IndexedList<Compra> comprasProducto(String productoId) {
-	// TODO Auto-generated method stub
 	return null;
 }
 
 @Override
 public Integer pedir(String clienteId, String productoId, int cantidad) {
-	// TODO Auto-generated method stub
 	return null;
 }
 
 	public static void main(String[] args) {
-	AlmacenA a= new AlmacenA();
+	//AlmacenA a= new AlmacenA();
 	//a.reabastecerProducto("champu", 4);
 	//a.reabastecerProducto("coco", 4);
 	//a.reabastecerProducto("champu", 4);

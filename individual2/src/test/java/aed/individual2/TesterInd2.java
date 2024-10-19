@@ -61,7 +61,7 @@ import java.util.stream.Stream;
 /**
  * The main tester class which contains JUnit5 tests.
  */
-@SuppressWarnings({"unused","deprecation"})
+@SuppressWarnings({"unused","removal"})
 public class TesterInd2 {
 
   
@@ -162,6 +162,7 @@ return ok_sofar ;
     if (!resultIs)
       Assertions.assertTrue(resultIs,messages) ;
   }
+  
   
   @Test
   public void test_003 () 

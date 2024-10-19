@@ -57,7 +57,7 @@ import java.util.stream.Stream;
 /**
  * The main tester class which contains JUnit5 tests.
  */
-@SuppressWarnings({ "unused", "deprecation" })
+@SuppressWarnings({ "unused" })
 public class TesterLab1 {
 
     @BeforeAll

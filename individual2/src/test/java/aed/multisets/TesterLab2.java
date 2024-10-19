@@ -64,7 +64,7 @@ import java.util.stream.Stream;
 /**
  * The main tester class which contains JUnit5 tests.
  */
-@SuppressWarnings({"unused","deprecation"})
+@SuppressWarnings({"unused"})
 public class TesterLab2 {
 
   
@@ -7345,7 +7345,6 @@ static class MultiSetUtils {
     } else return TestUtils.printer(obj, x -> printer(x));
   }
 
-  @SuppressWarnings("unchecked")
   public static boolean multiSetOk(MultiSet<String>[] sets,
                                    NodePositionList<NodePositionList<Pair<String,Integer>>> expected) {
     int i=0;
