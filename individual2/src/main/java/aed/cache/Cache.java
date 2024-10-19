@@ -41,38 +41,40 @@ public class Cache<Key, Value> {
         // Retrieve value from key off the storage
         Value val = mainMemory.read(key);
 
-        // Check for repeating Keys, else check for dropping
-        boolean repe = false;
-        Position<Key> cursorRepe = keyListLRU.first();
-        while (cursorRepe != null && !repe) {
-            repe = cursorRepe.element() == key;
-            cursorRepe = keyListLRU.next(cursorRepe);
-        }
-
-        if (repe) { // Displace the repe element to the start
-            keyListLRU.addFirst(keyListLRU.remove(keyListLRU.prev(cursorRepe)));
-        } else {
-            // Check for dropping keys off the cache
-            Key droppedKey = null;
-            if (keyListLRU.size() == maxCacheSize) // If size is max, we are due to drop the last Key.
-                droppedKey = keyListLRU.remove(keyListLRU.last());
-            keyListLRU.addFirst(key); // Now we should be able to add our new Key at the start.
-
-            // Dealing with dropped key
-            if (droppedKey != null) { // If we dropped a value (accessed by it's key)
-                CacheCell<Key, Value> droppedCell = cacheContents.remove(droppedKey);
-                if (droppedCell.getDirty())
-                    mainMemory.write(droppedKey, droppedCell.getValue());
+        if (val != null) {
+            // Check for repeating Keys, else check for dropping
+            boolean repe = false;
+            Position<Key> cursorRepe = keyListLRU.first();
+            while (cursorRepe != null && !repe) {
+                repe = cursorRepe.element() == key;
+                cursorRepe = keyListLRU.next(cursorRepe);
             }
 
-            // Either way Add new CacheCell as it is not a repe key
-            cacheContents.put(key, new CacheCell<Key, Value>(val, false, null)); // We do not assign Pos here, opt?
-        }
+            if (repe) { // Displace the repe element to the start
+                keyListLRU.addFirst(keyListLRU.remove(keyListLRU.prev(cursorRepe)));
+            } else {
+                // Check for dropping keys off the cache
+                Key droppedKey = null;
+                if (keyListLRU.size() == maxCacheSize) // If size is max, we are due to drop the last Key.
+                    droppedKey = keyListLRU.remove(keyListLRU.last());
+                keyListLRU.addFirst(key); // Now we should be able to add our new Key at the start.
 
-        Position<Key> cursorUpdatePos = keyListLRU.first();
-        while (cursorUpdatePos != cursorRepe) { // Untill null if not repe, until touched val if repe
-            cacheContents.get(cursorUpdatePos.element()).setPos(cursorUpdatePos);
-            cursorUpdatePos = keyListLRU.next(cursorUpdatePos);
+                // Dealing with dropped key
+                if (droppedKey != null) { // If we dropped a value (accessed by it's key)
+                    CacheCell<Key, Value> droppedCell = cacheContents.remove(droppedKey);
+                    if (droppedCell.getDirty())
+                        mainMemory.write(droppedKey, droppedCell.getValue());
+                }
+
+                // Either way Add new CacheCell as it is not a repe key
+                cacheContents.put(key, new CacheCell<Key, Value>(val, false, null)); // We do not assign Pos here, opt?
+            }
+
+            Position<Key> cursorUpdatePos = keyListLRU.first();
+            while (cursorUpdatePos != cursorRepe) { // Untill null if not repe, until touched val if repe
+                cacheContents.get(cursorUpdatePos.element()).setPos(cursorUpdatePos);
+                cursorUpdatePos = keyListLRU.next(cursorUpdatePos);
+            }
         }
 
         return val;
@@ -80,6 +82,7 @@ public class Cache<Key, Value> {
 
     // Establece un valor nuevo para la clave en la memoria cache
     public void put(Key key, Value value) {
+
         // CAMBIA este metodo
     }
 
