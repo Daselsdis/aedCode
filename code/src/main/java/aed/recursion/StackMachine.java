@@ -6,16 +6,15 @@ import es.upm.aedlib.positionlist.*;
 import es.upm.aedlib.lifo.*;
 
 public class StackMachine {
-  Map<String,PositionList<Instruction>> code;
-  LIFO<Integer> stack;
+    Map<String, PositionList<Instruction>> code;
+    LIFO<Integer> stack;
 
-  public StackMachine(Map<String,PositionList<Instruction>> code) {
-    this.stack = new LIFOArray<>();
-    this.code = code;
-  }
+    public StackMachine(Map<String, PositionList<Instruction>> code) {
+        this.stack = new LIFOArray<>();
+        this.code = code;
+    }
 
-  public void run(String name) {
-  }
+    public void run(String name) {
+    }
 
 }
-
