@@ -4,10 +4,16 @@ import es.upm.aedlib.Pair;
 import es.upm.aedlib.Position;
 import es.upm.aedlib.positionlist.*;
 
+
+import es.upm.aedlib.indexedlist.*;;
+
 public class Utils {
 
     public static int sqrt(int n) {
-        return sqrtRec(n, n / Math.E);
+        // Math.pow(2, (1/2)*(Math.log(n)/Math.log(2))) is the optimal stating
+        // aproximation for general values, though, in this small usecase, n/2 is faster
+        // to calculate and good enough (these are small testing values)
+        return sqrtRec(n, n / 2);
     }
 
     /** Truncated sqrt recursive function. First attempt, Babylonian method */
