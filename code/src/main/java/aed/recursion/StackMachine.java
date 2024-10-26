@@ -20,21 +20,33 @@ public class StackMachine {
             int ret = 0;
             PositionList<Instruction> prog = code.get(name);
             Position<Instruction> cursorProg = prog.first();
-            while (cursorProg != null && ret != -1) {
-                /*for (int i = 0; i < ret; i++) {
-                   cursorProg = prog.next(cursorProg);
-                } */
-               cursorProg = advanceCursor(0, ret, cursorProg, prog);
-                ret = execute(cursorProg, prog);
-            }
+            // while (cursorProg != null && ret != -1) {
+            //     /*
+            //      * for (int i = 0; i < ret; i++) {
+            //      * cursorProg = prog.next(cursorProg);
+            //      * }
+            //      */
+            //     cursorProg = advanceCursor(0, ret, cursorProg, prog);
+            //     ret = execute(cursorProg, prog);
+            // }
+            runRecusion(ret, prog, cursorProg);
         }
     }
 
-    private Position<Instruction> advanceCursor(int i, int ret, Position<Instruction> cursorProg, PositionList<Instruction> prog){
-        if(i<ret){
+    private int runRecusion(int ret, PositionList<Instruction> prog, Position<Instruction> cursorProg) {
+        cursorProg = advanceCursor(0, ret, cursorProg, prog);
+        ret = execute(cursorProg, prog);
+        if(cursorProg == null || ret == -1)
+            return ret;
+        return runRecusion(ret, prog, cursorProg);
+    }
+
+    private Position<Instruction> advanceCursor(int i, int ret, Position<Instruction> cursorProg,
+            PositionList<Instruction> prog) {
+        if (i < ret) {
             cursorProg = prog.next(cursorProg);
-            return advanceCursor(i+1, ret, cursorProg, prog);
-        }else 
+            return advanceCursor(i + 1, ret, cursorProg, prog);
+        } else
             return cursorProg;
     }
 
