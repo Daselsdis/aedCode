@@ -10,7 +10,7 @@ public class Utils {
         return sqrtRec(n, n / Math.E);
     }
 
-    // * Truncated sqrt recursive function. First attempt, Babylonian method */
+    /** Truncated sqrt recursive function. First attempt, Babylonian method */
     private static int sqrtRec(int a, double xn) {
         if ((int) xn * (int) xn <= a && a <= ((int) xn + 1) * ((int) xn + 1)) // Final case
             return (int) xn;
@@ -46,7 +46,8 @@ public class Utils {
     }
 
     private static Position<Integer> find(PositionList<Integer> grid, int val) {
-        // FIXME: naïve implementation, prob will swap with bin search at some point
+        // FIXME: naïve implementation, prob will swap with bin search at some point if
+        // grid can be something other than a PositionList.
         return findRec(grid.first(), grid, val);
     }
 
@@ -97,26 +98,5 @@ public class Utils {
         if (pos1.element().equals(pos2.element()))
             return true;
         return equalsDer(pos1, p2.next(pos2), p1, p2);
-    }
-
-    public static <E, T> void main(String[] args) {
-        /*
-         * PositionList<Pair<String, Integer>> a = new NodePositionList<Pair<String,
-         * Integer>>();
-         * a.addLast(new Pair<String,Integer>("hej",4));
-         * a.addLast(new Pair<String,Integer>("hello",4));
-         * a.addLast(new Pair<String,Integer>("kaixo",3));
-         * a.addLast(new Pair<String,Integer>("namaste",5));
-         * a.addLast(new Pair<String,Integer>("zdravo",4));
-         * 
-         * PositionList<Pair<String, Integer>> b = new NodePositionList<Pair<String,
-         * Integer>>(a);
-         */
-        PositionList<Pair<String, Integer>> a = new NodePositionList<Pair<String, Integer>>();
-        a.addLast(new Pair<String, Integer>("hola", 4));
-        PositionList<Pair<String, Integer>> b = new NodePositionList<Pair<String, Integer>>();
-
-        b.addLast(new Pair<String, Integer>("rimaykullayki", 4));
-        equals(a, b);
     }
 }

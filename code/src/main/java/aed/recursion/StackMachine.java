@@ -17,30 +17,63 @@ public class StackMachine {
 
     public void run(String name) {
         if (code.containsKey(name)) {
-            int ret = 0;
             PositionList<Instruction> prog = code.get(name);
-            Position<Instruction> cursorProg = prog.first();
-            // while (cursorProg != null && ret != -1) {
-            //     /*
-            //      * for (int i = 0; i < ret; i++) {
-            //      * cursorProg = prog.next(cursorProg);
-            //      * }
-            //      */
-            //     cursorProg = advanceCursor(0, ret, cursorProg, prog);
-            //     ret = execute(cursorProg, prog);
-            // }
-            runRecusion(ret, prog, cursorProg);
+            runRecusion(0, prog, prog.first());
         }
     }
 
-    private int runRecusion(int ret, PositionList<Instruction> prog, Position<Instruction> cursorProg) {
+    /**
+     * @implNote
+     *           The setup case is ret = 0, prog is whichever instruction set is
+     *           loaded, and cursorProg is the first of these. The first run
+     *           through, we don't skip the first instruction by advancing the
+     *           cursor by ret, as ret = 0. Then, the instruction at the cursor is
+     *           executed, and the amount to increase the cursor by, passed through
+     *           ret to the next iteration. The next iteration will only come if
+     *           after advancing the cursor ret times during this iteration, it
+     *           still points to something, and if ret isn't -1, which is the code
+     *           I've designed for when we must terminate a subrutine and return to
+     *           the previous run instance, which will happen if we don't go to the
+     *           next iteration.
+     * @param ret
+     *                   The number of times to advance the cursor, given by
+     *                   previous iterations's instruction execution. To start, it
+     *                   must be 0.
+     * @param prog
+     *                   The PositionList of Instructions oevr which we advance the
+     *                   cursor.
+     * @param cursorProg
+     *                   The current program cursor, it's advanced by ret at the
+     *                   start of every iteration.
+     */
+    private void runRecusion(int ret, PositionList<Instruction> prog, Position<Instruction> cursorProg) {
         cursorProg = advanceCursor(0, ret, cursorProg, prog);
-        ret = execute(cursorProg, prog);
-        if(cursorProg == null || ret == -1)
-            return ret;
-        return runRecusion(ret, prog, cursorProg);
+        ret = execute(cursorProg.element());
+        if (cursorProg != null && ret != -1)
+            runRecusion(ret, prog, cursorProg);
     }
 
+    /**
+     * @implNote
+     *           It returns a call to itself with i+1 while (i < ret) as a recursive
+     *           case, and cursorProg elsewise as an end case. It's starting case is
+     *           the current cursorProg, current Prog, current ret value to advance,
+     *           and i = 0.
+     * @param i
+     *                   The iteration number, by which we advance the iteration.
+     *                   Must be 0 when the function if called the first time.
+     * @param ret
+     *                   The number of times to advance the cursor, given by the
+     *                   previous instuction's execution, thus the name res.
+     * @param cursorProg
+     *                   The current Program cursor, which is the variable we
+     *                   advance and ultimately return.
+     * @param prog
+     *                   The PositionList of Instructions over which we advance the
+     *                   cursor.
+     * @return
+     *         cursorProg after advancing it ret times(in case i starts as 0).
+     */
     private Position<Instruction> advanceCursor(int i, int ret, Position<Instruction> cursorProg,
             PositionList<Instruction> prog) {
         if (i < ret) {
@@ -50,15 +83,24 @@ public class StackMachine {
             return cursorProg;
     }
 
-    private int execute(Position<Instruction> cursorProg, PositionList<Instruction> prog) {
-        switch (cursorProg.element().getInstType()) {
+    /**
+     * 
+     * @param ins
+     *            The instruction under the current cursor.
+     * @return
+     *         The return value is used both as the ammount of instructions to
+     *         advance (default 1, and with if_next, the passed value), and also as
+     *         the return order to stop current subrutine and return (-1)
+     */
+    private int execute(Instruction ins) {
+        switch (ins.getInstType()) {
             case CALL:
-                this.run(cursorProg.element().getNameParm());
+                this.run(ins.getNameParm());
                 break;
             case RET:
                 return -1;
             case PUSH:
-                stack.push(cursorProg.element().getIntParm());
+                stack.push(ins.getIntParm());
                 break;
             case PRINT:
                 System.out.println(stack.pop());
@@ -85,7 +127,7 @@ public class StackMachine {
                 break;
             case IF_SKIP:
                 if (!stack.pop().equals((Integer) 0))
-                    return cursorProg.element().getIntParm();
+                    return ins.getIntParm(); // extra amount to advance the cursor by
                 break;
             case SUB:
                 stack.push(stack.pop() - stack.pop());
@@ -99,31 +141,6 @@ public class StackMachine {
             default:
                 break;
         }
-        return 1;
+        return 1; // Regular amount to advance the cursor by
     }
-
-    public static void main(String[] args) {
-        Map<String, PositionList<Instruction>> code = new HashTableMap<>();
-        Instruction[] main = new Instruction[] {
-                new Instruction(Instruction.InstType.PUSH, 5), new Instruction(Instruction.InstType.CALL, "factorial"),
-                new Instruction(Instruction.InstType.RET)
-        };
-        Instruction[] factorial = new Instruction[] {
-                new Instruction(Instruction.InstType.DUP), new Instruction(Instruction.InstType.PUSH, 1),
-                new Instruction(Instruction.InstType.EQ), new Instruction(Instruction.InstType.IF_SKIP, 8) // 1+7
-                // ELSE PART
-                , new Instruction(Instruction.InstType.DUP), new Instruction(Instruction.InstType.PUSH, 1),
-                new Instruction(Instruction.InstType.SWAP), new Instruction(Instruction.InstType.SUB),
-                new Instruction(Instruction.InstType.CALL, "factorial"), new Instruction(Instruction.InstType.MULT),
-                new Instruction(Instruction.InstType.RET)
-                // THEN PART
-                , new Instruction(Instruction.InstType.DROP), new Instruction(Instruction.InstType.PUSH, 1),
-                new Instruction(Instruction.InstType.RET)
-        };
-        code.put("main", new NodePositionList<>(main));
-        code.put("factorial", new NodePositionList<>(factorial));
-        StackMachine sm = new StackMachine(code);
-        sm.run("main");
-    }
-
 }
