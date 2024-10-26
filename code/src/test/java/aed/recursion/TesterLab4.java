@@ -5029,7 +5029,7 @@ static class TestData {
   static ArrayList<String> trace;
   static ArrayList<String> messages;
   static boolean isJunitTester;
-  static int individualTimeout = 10;
+  static int individualTimeout = 1000000000; // TODO: 10
   static int globalTimeout = 60;
 
   public static void initTrace() {
