@@ -17,16 +17,14 @@ public class Utils {
     }
 
     private static <E> PositionList<Position<E>> bsImpl(Tree<E> t) {
-        Position<E> bottom;
-        int maxdepth = 0;
-        int currentdepth = 0;
+        PositionList<E> res = new NodePositionList<>();
+        FIFOList<PositionList<Position<E>>> visited = new FIFOList<PositionList<Position<E>>>();
+        /*visited.enqueue(t.root());
 
-        FIFOList<Position<E>> visited = new FIFOList<Position<E>>();
-        visited.enqueue(t.root());
+        while (!visited.isEmpty()) {
 
-        boolean done = false;
-
-        while (!done) {
+            PositionList<Position<E>> currentPath= new NodePositionList<>();
+            currentPath.addFirst(visited.dequeue());
             Position<E> head = visited.first();
             if (!t.isExternal(head)) {
                 Iterator<Position<E>> a = t.children(head).iterator();
@@ -46,7 +44,7 @@ public class Utils {
                 maxdepth=currentdepth;
             }
             done = visited.isEmpty();
-        }
+        }*/
         return null;
     }
 
