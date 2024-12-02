@@ -98,8 +98,8 @@ public class Paciente implements Comparable<Paciente> {
         if (this.prioridad != paciente.getPrioridad())
             return this.prioridad < paciente.getPrioridad() ? -1 : 1;
         if (this.tiempoAdmisionEnPrioridad != paciente.getTiempoAdmisionEnPrioridad())
-            return this.tiempoAdmisionEnPrioridad > paciente.getTiempoAdmisionEnPrioridad() ? -1 : 1;
-        return this.tiempoAdmision > paciente.getTiempoAdmision() ? -1 : 1;
+            return this.tiempoAdmisionEnPrioridad < paciente.getTiempoAdmisionEnPrioridad() ? -1 : 1;
+        return this.tiempoAdmision < paciente.getTiempoAdmision() ? -1 : 1;
     }
 
     // Hay que definir equals
