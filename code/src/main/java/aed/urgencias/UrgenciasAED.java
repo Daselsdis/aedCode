@@ -4,44 +4,58 @@ import java.util.Iterator;
 
 import es.upm.aedlib.Entry;
 import es.upm.aedlib.Pair;
-import es.upm.aedlib.lifo.LIFO;
-import es.upm.aedlib.lifo.LIFOArray;
 import es.upm.aedlib.map.HashTableMap;
 import es.upm.aedlib.positionlist.NodePositionList;
 import es.upm.aedlib.positionlist.PositionList;
+import es.upm.aedlib.priorityqueue.PriorityQueue;
+import es.upm.aedlib.priorityqueue.SortedListPriorityQueue;
 
 public class UrgenciasAED implements Urgencias {
     HashTableMap<String, Paciente> list = new HashTableMap<>();
+    PriorityQueue<Paciente, Paciente> listaOrdenada = new SortedListPriorityQueue<>();
     Pair<Integer, Integer> infoEsp = new Pair<Integer, Integer>(0, 0);
 
     @Override
     public Paciente admitirPaciente(String DNI, int prioridad, int hora) throws PacienteExisteException {
-        if (doesPacientExist(DNI))
+        if (list.containsKey(DNI))
             throw new PacienteExisteException();
         Paciente pac = new Paciente(DNI, prioridad, hora, hora);
         list.put(DNI, pac);
+        listaOrdenada.enqueue(pac, pac);
         return pac;
-    }
-
-    private boolean doesPacientExist(String DNI) {
-        return list.containsKey(DNI);
     }
 
     @Override
     public Paciente salirPaciente(String DNI, int hora) throws PacienteNoExisteException {
-        if (!doesPacientExist(DNI))
+        if (!list.containsKey(DNI))
             throw new PacienteNoExisteException();
-        return list.remove(DNI);
+        Paciente pac = list.remove(DNI);
+        Entry<Paciente, Paciente> e = findEntry(DNI);
+        listaOrdenada.remove(e);
+        return pac;
+    }
+
+    private Entry<Paciente, Paciente> findEntry(String DNI) {
+        Iterator<Entry<Paciente, Paciente>> i = listaOrdenada.iterator();
+        boolean done = false;
+        Entry<Paciente, Paciente> e = null;
+        while (i.hasNext() && !done) {
+            e = i.next();
+            done = e.getKey().getDNI().equals(DNI);
+        }
+        return e;
     }
 
     @Override
     public Paciente cambiarPrioridad(String DNI, int nuevaPrioridad, int hora) throws PacienteNoExisteException {
-        if (!doesPacientExist(DNI))
+        if (!list.containsKey(DNI))
             throw new PacienteNoExisteException();
         Paciente pac = list.get(DNI);
         if (pac.getPrioridad() != nuevaPrioridad) {
+            listaOrdenada.remove(findEntry(DNI));
             pac.setPrioridad(nuevaPrioridad);
             pac.setTiempoAdmisionEnPrioridad(hora);
+            listaOrdenada.enqueue(pac, pac);
             list.put(DNI, pac);
         }
         return pac;
@@ -51,27 +65,12 @@ public class UrgenciasAED implements Urgencias {
     public Paciente atenderPaciente(int hora) {
         Paciente pac = null;
         if (!list.isEmpty()) {
-            pac = list.remove(topUrgencia(list));
+            pac = list.remove(listaOrdenada.first().getKey().getDNI());
+            listaOrdenada.remove(findEntry(pac.getDNI()));
             infoEsp.setLeft(infoEsp.getLeft() + (hora - pac.getTiempoAdmision()));
             infoEsp.setRight(infoEsp.getRight() + 1);
         }
         return pac;
-    }
-
-    private String topUrgencia(HashTableMap<String, Paciente> list) {
-        Iterator<Entry<String, Paciente>> i = list.iterator();
-        Entry<String, Paciente> current = i.next();
-        Entry<String, Paciente> temp;
-        String DNImaxImport = current.getKey();
-        while (i.hasNext()) {
-            temp = i.next();
-            if (temp.getValue().compareTo(current.getValue()) < 0) {
-                DNImaxImport = temp.getKey();
-            }
-            current = temp;
-        }
-        return DNImaxImport;
-
     }
 
     @Override
@@ -82,9 +81,17 @@ public class UrgenciasAED implements Urgencias {
             pac = i.next().getValue();
             if ((hora - pac.getTiempoAdmisionEnPrioridad()) > maxTiempoEspera) {
                 if (pac.getPrioridad() > 0) {
-                    pac.setPrioridad(pac.getPrioridad() - 1);
-                    pac.setTiempoAdmisionEnPrioridad(hora);
-                    list.put(pac.getDNI(), pac);
+                    try {
+                        cambiarPrioridad(pac.getDNI(), pac.getPrioridad() - 1, hora);
+                    } catch (PacienteNoExisteException e) {
+                        // unreachable state
+                        e.printStackTrace();
+                    }
+                    // TODO: maybe do this stuff locally without error handling?
+                    // listaOrdenada.remove(findEntry(pac.getDNI()));
+                    // pac.setPrioridad(pac.getPrioridad() - 1);
+                    // pac.setTiempoAdmisionEnPrioridad(hora);
+                    // list.put(pac.getDNI(), pac);
                 }
             }
         }
@@ -92,14 +99,10 @@ public class UrgenciasAED implements Urgencias {
 
     @Override
     public Iterable<Paciente> pacientesEsperando() {
-        HashTableMap<String, Paciente> temp = new HashTableMap<>(list);
+        Iterator<Entry<Paciente, Paciente>> i = listaOrdenada.iterator();
         PositionList<Paciente> colaOrd = new NodePositionList<Paciente>();
-        String top;
-        Paciente pac;
-        while (!temp.isEmpty()) {
-            top = topUrgencia(temp);
-            pac = temp.remove(top);
-            colaOrd.addLast(pac);
+        while (i.hasNext()) {
+            colaOrd.addLast(i.next().getKey());
         }
         return colaOrd;
     }
@@ -112,26 +115,6 @@ public class UrgenciasAED implements Urgencias {
     @Override
     public Pair<Integer, Integer> informacionEspera() {
         return infoEsp;
-    }
-
-    public static void main(String[] args) {
-        UrgenciasAED urgencias = new UrgenciasAED();
-
-        try {
-            urgencias.admitirPaciente("86117476T", 8, 7);
-            urgencias.admitirPaciente("42385993N", 5, 9);
-            urgencias.aumentaPrioridad(51, 15);
-            urgencias.admitirPaciente("66327369B", 6, 25);
-            urgencias.atenderPaciente(26);
-            urgencias.salirPaciente("86117476T", 27);
-            urgencias.admitirPaciente("38154317Y", 2, 31);
-            urgencias.admitirPaciente("63647893T", 0, 40);
-            urgencias.admitirPaciente("36168393K", 4, 44);
-            urgencias.salirPaciente("63647893T", 48);
-            urgencias.atenderPaciente(54);
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
     }
 
 }
