@@ -106,8 +106,11 @@ public class Paciente implements Comparable<Paciente> {
     // Usad solo el DNI al comparar pacientes
     @Override
     public boolean equals(Object obj) {
-        Paciente p = (Paciente) obj;
-        return this.DNI == p.getDNI();
+        if(obj instanceof Paciente){
+            Paciente p = (Paciente) obj;
+            return this.DNI == p.getDNI();
+        }
+        return false;
     }
 
     // Hay que definit hashCode
