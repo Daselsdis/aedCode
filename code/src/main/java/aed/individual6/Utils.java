@@ -19,7 +19,7 @@ public class Utils {
         HashTableMapSet<Vertex<V>> res = new HashTableMapSet<>();
 
         reachableFrom1 = reach(g, v1);
-        reachableFrom2 = reach(g, v2); // Implement conditional reach
+        reachableFrom2 = reach(g, v2); // TODO: Implement conditional reach
         Iterator<Vertex<V>> i = reachableFrom1.iterator();
         Vertex<V> current = null;
         while (i.hasNext()) {
@@ -33,6 +33,7 @@ public class Utils {
 
     private static <V> HashTableMapSet<Vertex<V>> reach(DirectedGraph<V, Boolean> g, Vertex<V> v) {
         HashTableMapSet<Vertex<V>> res = new HashTableMapSet<>();
+        res.add(v);
         return reachRec(g, v, res);
     }
 
@@ -42,6 +43,7 @@ public class Utils {
         for (Edge<Boolean> e : g.outgoingEdges(v)) {
             Vertex<V> vert = g.endVertex(e);
             if (e.element() && !res.contains(vert) && !vert.equals(v)) {
+                res.add(vert);
                 temp.add(vert);
             }
         }
@@ -53,7 +55,6 @@ public class Utils {
         while (i.hasNext()) {
             current = i.next();
             if (i.hasNext())
-                res.add(v);
                 res = reachRec(g, current, res);
         }
 
