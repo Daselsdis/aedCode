@@ -20,7 +20,7 @@ public class Utils {
         HashTableMapSet<Vertex<V>> res = new HashTableMapSet<>();
 
         reachableFrom1 = reach(g, v1);
-        reachableFrom2 = reach(g, v2); // TODO: Implement conditional reach
+        reachableFrom2 = reach(g, v2);
         Iterator<Vertex<V>> i = reachableFrom1.iterator();
         Vertex<V> current = null;
         while (i.hasNext()) {
@@ -60,36 +60,6 @@ public class Utils {
         }
 
         return reachRec(g, current, res);
-    }
-    private static <V> HashTableMapSet<Vertex<V>> condReach(DirectedGraph<V, Boolean> g, Vertex<V> v, HashTableMapSet<Vertex<V>> filter) {
-        HashTableMapSet<Vertex<V>> res = new HashTableMapSet<>();
-        if(filter.contains(v))
-            res.add(v);
-        return condReachRec(g, v, res, filter);
-    }
-
-    private static <V> HashTableMapSet<Vertex<V>> condReachRec(DirectedGraph<V, Boolean> g, Vertex<V> v,
-            HashTableMapSet<Vertex<V>> res, HashTableMapSet<Vertex<V>> filter) {
-        HashTableMapSet<Vertex<V>> temp = new HashTableMapSet<>();
-        for (Edge<Boolean> e : g.outgoingEdges(v)) {
-            Vertex<V> vert = g.endVertex(e);
-            if (e.element() && !res.contains(vert) && !vert.equals(v) && filter.contains(v)) {
-                res.add(vert);
-                temp.add(vert);
-            }
-        }
-        if (temp.isEmpty()) {
-            return res;
-        }
-        Iterator<Vertex<V>> i = temp.iterator();
-        Vertex<V> current = null;
-        while (i.hasNext()) {
-            current = i.next();
-            if (i.hasNext())
-                res = condReachRec(g, current, res, filter);
-        }
-
-        return condReachRec(g, current, res, filter);
     }
 
     /**
@@ -166,13 +136,4 @@ public class Utils {
         }
         return null;
     }
-
-    public static void main(String[] args) {
-
-        UndirectedAdjacencyListGraph<Integer, Integer> graph = new UndirectedAdjacencyListGraph<Integer, Integer>();
-        Vertex<Integer> v_0 = graph.insertVertex(0);
-        Vertex<Integer> v_1 = graph.insertVertex(1);
-        existsPathLess(graph, v_0, v_1, 10);
-    }
-
 }
