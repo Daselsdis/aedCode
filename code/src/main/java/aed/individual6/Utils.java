@@ -6,6 +6,7 @@ import es.upm.aedlib.set.*;
 import java.util.Iterator;
 
 import es.upm.aedlib.graph.*;
+import es.upm.aedlib.map.HashTableMap;
 
 public class Utils {
 
@@ -60,6 +61,36 @@ public class Utils {
 
         return reachRec(g, current, res);
     }
+    private static <V> HashTableMapSet<Vertex<V>> condReach(DirectedGraph<V, Boolean> g, Vertex<V> v, HashTableMapSet<Vertex<V>> filter) {
+        HashTableMapSet<Vertex<V>> res = new HashTableMapSet<>();
+        if(filter.contains(v))
+            res.add(v);
+        return condReachRec(g, v, res, filter);
+    }
+
+    private static <V> HashTableMapSet<Vertex<V>> condReachRec(DirectedGraph<V, Boolean> g, Vertex<V> v,
+            HashTableMapSet<Vertex<V>> res, HashTableMapSet<Vertex<V>> filter) {
+        HashTableMapSet<Vertex<V>> temp = new HashTableMapSet<>();
+        for (Edge<Boolean> e : g.outgoingEdges(v)) {
+            Vertex<V> vert = g.endVertex(e);
+            if (e.element() && !res.contains(vert) && !vert.equals(v) && filter.contains(v)) {
+                res.add(vert);
+                temp.add(vert);
+            }
+        }
+        if (temp.isEmpty()) {
+            return res;
+        }
+        Iterator<Vertex<V>> i = temp.iterator();
+        Vertex<V> current = null;
+        while (i.hasNext()) {
+            current = i.next();
+            if (i.hasNext())
+                res = condReachRec(g, current, res, filter);
+        }
+
+        return condReachRec(g, current, res, filter);
+    }
 
     /**
      * Devuelve un camino (una lista de aristas) que llevan desde from y to,
@@ -70,32 +101,78 @@ public class Utils {
 
     public static <V> PositionList<Edge<Integer>> existsPathLess(UndirectedGraph<V, Integer> g, Vertex<V> from,
             Vertex<V> to, int limit) {
+
+        PositionList<Edge<Integer>> path = new NodePositionList<Edge<Integer>>(); // acts as lifo
+        if (to.equals(from)) {
+            return path;
+        }
+
+        HashTableMap<Vertex<V>, Integer> dist = new HashTableMap<Vertex<V>, Integer>();
+        HashTableMap<Vertex<V>, Edge<Integer>> prevEdge = new HashTableMap<Vertex<V>, Edge<Integer>>();
+        HashTableMapSet<Vertex<V>> unvisited = new HashTableMapSet<>();
+
+        for (Vertex<V> v : g.vertices()) {
+            unvisited.add(v);
+            dist.put(v, Integer.MAX_VALUE);
+        }
+
+        dist.put(from, 0);
+
+        Vertex<V> currentVert;
+        int currentDist;
+        int auxDist;
+
+        while (!unvisited.isEmpty()) {
+
+            currentDist = Integer.MAX_VALUE;
+            currentVert = null;
+            // closest vert
+            for (Vertex<V> v : unvisited) {
+                auxDist = dist.get(v);
+                if (auxDist < currentDist) {
+                    currentVert = v;
+                    currentDist = auxDist;
+                }
+            }
+
+            if (currentVert == null) {
+                break; // we've reached the end and not returned previously, they must be disconnected
+                // or too far away. Return null
+            }
+            unvisited.remove(currentVert);
+            if (currentVert.equals(to) && currentDist < limit) { // Found a path, construct it and send it back
+                Vertex<V> temp = to;
+                while (temp != from) {
+                    Edge<Integer> edge = prevEdge.get(temp);
+                    path.addFirst(edge);
+                    temp = g.opposite(temp, edge);
+                }
+                return path;
+            } else { // Update current distances to from for every vert adj to currentVert
+                Vertex<V> neigh;
+                int newDist;
+                for (Edge<Integer> e : g.edges(currentVert)) {
+                    neigh = g.opposite(currentVert, e);
+                    newDist = currentDist + e.element();
+                    if (newDist < dist.get(neigh)) {
+                        dist.put(neigh, newDist);
+                        prevEdge.put(neigh, e);
+                    }
+
+                }
+
+            }
+
+        }
         return null;
     }
 
     public static void main(String[] args) {
 
-        DirectedAdjacencyListGraph<Integer, Boolean> graph = new DirectedAdjacencyListGraph<Integer, Boolean>();
+        UndirectedAdjacencyListGraph<Integer, Integer> graph = new UndirectedAdjacencyListGraph<Integer, Integer>();
         Vertex<Integer> v_0 = graph.insertVertex(0);
         Vertex<Integer> v_1 = graph.insertVertex(1);
-        Vertex<Integer> v_2 = graph.insertVertex(2);
-        Vertex<Integer> v_3 = graph.insertVertex(3);
-        Vertex<Integer> v_4 = graph.insertVertex(4);
-        Vertex<Integer> v_5 = graph.insertVertex(5);
-        Vertex<Integer> v_6 = graph.insertVertex(6);
-        graph.insertDirectedEdge(v_6, v_6, false);
-        graph.insertDirectedEdge(v_5, v_5, true);
-        graph.insertDirectedEdge(v_5, v_6, true);
-        graph.insertDirectedEdge(v_4, v_4, true);
-        graph.insertDirectedEdge(v_4, v_5, true);
-        graph.insertDirectedEdge(v_3, v_4, true);
-        graph.insertDirectedEdge(v_3, v_6, true);
-        graph.insertDirectedEdge(v_2, v_4, true);
-        graph.insertDirectedEdge(v_1, v_3, true);
-        graph.insertDirectedEdge(v_1, v_4, true);
-        graph.insertDirectedEdge(v_0, v_0, true);
-        graph.insertDirectedEdge(v_0, v_6, true);
-        reachableFromBoth(graph, v_3, v_3);
+        existsPathLess(graph, v_0, v_1, 10);
     }
 
 }
