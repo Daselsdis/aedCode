@@ -6,6 +6,7 @@ import es.upm.aedlib.positionlist.NodePositionList;
 import es.upm.aedlib.graph.DirectedGraph;
 import es.upm.aedlib.graph.DirectedAdjacencyListGraph;
 import es.upm.aedlib.graph.Vertex;
+import es.upm.aedlib.indexedlist.ArrayIndexedList;
 import es.upm.aedlib.graph.Edge;
 import es.upm.aedlib.map.HashTableMap;
 import es.upm.aedlib.set.HashTableMapSet;
@@ -13,23 +14,23 @@ import es.upm.aedlib.set.Set;
 import java.util.Iterator;
 
 public class Delivery<V> {
-    DirectedAdjacencyListGraph<V,Integer> graph;
+    DirectedAdjacencyListGraph<V,Integer> graph = new DirectedAdjacencyListGraph<>();
 
     // Construct a graph out of a series of vertices and an adjacency matrix.
     // There are 'len' vertices. A null means no connection. A non-negative
     // number represents distance between nodes.
     public Delivery(V[] places, Integer[][] gmat) {
-        for(int i  = 0; i<gmat.length;i++){
+        ArrayIndexedList<Vertex<V>> verts = new ArrayIndexedList<Vertex<V>>();
+        for(int i = 0; i<places.length;i++){
+            verts.add(i, graph.insertVertex(places[i]));
         }
         for(int i  = 0; i<gmat.length;i++){
             for(int j = 0; j<gmat.length;j++){
-                if(gmat[i][j]!=0){
-                    graph.insertDirectedEdge(graph., j, gmat[i][j]);
+                if(gmat[i][j]!=null && gmat[i][j]>=0){
+                    graph.insertDirectedEdge(verts.get(i),verts.get(j),gmat[i][j]);
                 }
             }
         }
-        
-
     }
 
     // Just return the graph that was constructed
@@ -39,8 +40,7 @@ public class Delivery<V> {
 
     // Return a Hamiltonian path for the stored graph, or null if there is none.
     // The list containts a series of vertices, with no repetitions (even if the
-    // path
-    // can be expanded to a cycle).
+    // path can be expanded to a cycle).
     public PositionList<Vertex<V>> tour() {
         return null;
     }
