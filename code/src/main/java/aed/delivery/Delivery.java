@@ -8,10 +8,6 @@ import es.upm.aedlib.graph.DirectedAdjacencyListGraph;
 import es.upm.aedlib.graph.Vertex;
 import es.upm.aedlib.indexedlist.ArrayIndexedList;
 import es.upm.aedlib.graph.Edge;
-import es.upm.aedlib.map.HashTableMap;
-import es.upm.aedlib.set.HashTableMapSet;
-import es.upm.aedlib.set.Set;
-import java.util.Iterator;
 
 public class Delivery<V> {
     DirectedAdjacencyListGraph<V, Integer> graph = new DirectedAdjacencyListGraph<>();
@@ -21,16 +17,14 @@ public class Delivery<V> {
     // number represents distance between nodes.
     public Delivery(V[] places, Integer[][] gmat) {
         ArrayIndexedList<Vertex<V>> verts = new ArrayIndexedList<Vertex<V>>();
-        for (int i = 0; i < places.length; i++) {
+        for (int i = 0; i < places.length; i++)
             verts.add(i, graph.insertVertex(places[i]));
-        }
-        for (int i = 0; i < gmat.length; i++) {
-            for (int j = 0; j < gmat.length; j++) {
-                if (gmat[i][j] != null && gmat[i][j] >= 0) {
+
+        for (int i = 0; i < gmat.length; i++)
+            for (int j = 0; j < gmat.length; j++)
+                if (gmat[i][j] != null && gmat[i][j] >= 0)
                     graph.insertDirectedEdge(verts.get(i), verts.get(j), gmat[i][j]);
-                }
-            }
-        }
+
     }
 
     // Just return the graph that was constructed
@@ -45,7 +39,7 @@ public class Delivery<V> {
         PositionList<Vertex<V>> path = new NodePositionList<Vertex<V>>();
         PositionList<Vertex<V>> vertices = new NodePositionList<Vertex<V>>();
         graph.vertices().forEach(vertices::addLast);
-        for(Vertex<V> v : vertices){
+        for (Vertex<V> v : vertices) {
             path.addLast(v);
             if (tourIter(path, vertices))
                 return path;
@@ -96,7 +90,7 @@ public class Delivery<V> {
                     connectingEdge = e;
                     break;
                 }
-            if(connectingEdge!=null){
+            if (connectingEdge != null) {
                 len += connectingEdge.element();
                 connectingEdge = null;
             }
@@ -109,10 +103,5 @@ public class Delivery<V> {
 
     public String toString() {
         return "Delivery";
-    }
-    public static void main(String[] args) {
-        Delivery<String> d = new Delivery<String>(new String[] { new String("Alcala de Henares"),new String("Rozas de Puerto Real") },new Integer[][] { { null,null }, { 23,null } });
-        PositionList<Vertex<String>> p = d.tour();
-        d.length(p);
     }
 }
