@@ -55,11 +55,10 @@ public class Utils {
         Vertex<V> current = null;
         while (i.hasNext()) {
             current = i.next();
-            if (i.hasNext())
-                res = reachRec(g, current, res);
+            res = reachRec(g, current, res);
         }
 
-        return reachRec(g, current, res);
+        return res;
     }
 
     /**
